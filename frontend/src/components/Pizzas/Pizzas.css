@@ -1,0 +1,56 @@
+.pizza-list ul {
+    list-style-type: none;
+}
+body {
+    background-image: url('../../images/pizzabg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    margin: 0;
+    font-family: 'Arial', sans-serif; /* Optional: To use a default font for the entire app */
+  }
+  .pizza-header-container {
+    padding-top: 8rem;
+    padding-bottom: 6rem;
+}
+
+.pizza-header {
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,1);
+}
+
+.pizza-subheader {
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0,0,0,1);
+}
+
+.pizza-card-box {
+    width: 250px;
+    height: 300px;
+}
+
+.pizza-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.pizza-image {
+    height: 140px;
+}
+
+.pizza-name {
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,1);
+}
+
+.pizza-price {
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+
+.pizza-order-button {
+    border-radius: 25px;
+    box-shadow: 0px 4px 6px rgba(0,0,0,1);
+}

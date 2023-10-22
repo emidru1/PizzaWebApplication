@@ -1,13 +1,11 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography } from '@mui/material';
 import Link from '@mui/material/Link';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { createTheme } from '@mui/material/styles';
 
 const defaultTheme = createTheme();
 
 export default function NavBar() {
-    const navigate = useNavigate();
 
     return(
         <AppBar

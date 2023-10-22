@@ -1,11 +1,12 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardActions, Button, Grid, Typography, Container, Box, CardMedia } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import useFetch from '../useFetch';
-import './Pizzas.css';
+import { Card, CardContent, CardActions, Button, Grid, Typography, Container, Box, CardMedia } from '@mui/material';
 import smallPizzaImg from '../../images/small_pizza.jpg';
 import mediumPizzaImg from '../../images/medium_pizza.jpg';
 import largePizzaImg from '../../images/large_pizza.jpg';
+import './Pizzas.css';
+
 export default function Pizzas() {
     const { data: pizzas, error } = useFetch('http://localhost:5290/api/Pizza/sizes');
     const navigate = useNavigate();

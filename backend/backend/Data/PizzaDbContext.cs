@@ -5,15 +5,16 @@ namespace backend.Data
 {
     public class PizzaDbContext : DbContext
     {
-        public DbSet<PizzaSize> PizzaSizes { get; set; }
-        public DbSet<PizzaTopping> PizzaToppings { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderTopping> OrderToppings { get; set; }
+        public virtual DbSet<PizzaSize> PizzaSizes { get; set; }
+        public virtual DbSet<PizzaTopping> PizzaToppings { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<OrderTopping> OrderToppings { get; set; }
         public PizzaDbContext(DbContextOptions<PizzaDbContext> options)
         : base(options)
         {
 
         }
+        public PizzaDbContext() { }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseInMemoryDatabase("PizzaDatabase");

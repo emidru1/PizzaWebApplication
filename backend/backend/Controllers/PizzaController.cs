@@ -9,6 +9,7 @@ namespace backend.Controllers
     [Route("api/[controller]")]
     public class PizzaController : ControllerBase
     {
+        private readonly ILogger<PizzaController> _logger;
         private readonly PizzaDbContext _dbContext;
         public PizzaController(PizzaDbContext context)
         {
@@ -20,12 +21,13 @@ namespace backend.Controllers
             try
             {
                 var pizzaSizes = await _dbContext.PizzaSizes.ToListAsync();
-                return Ok(pizzaSizes);
-            } 
+                return new OkObjectResult(pizzaSizes);
+            }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message); // or use a logger if you have one set up
                 return StatusCode(500, "Internal server error");
-            } 
+            }
         }
         [HttpGet("toppings")]
         public async Task<ActionResult<IEnumerable<PizzaTopping>>> GetAllPizzaToppings()
@@ -33,10 +35,11 @@ namespace backend.Controllers
             try
             {
                 var pizzaToppings = await _dbContext.PizzaToppings.ToListAsync();
-                return Ok(pizzaToppings);
+                return new OkObjectResult(pizzaToppings);
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message); // or use a logger if you have one set up
                 return StatusCode(500, "Internal server error");
             }
         }

@@ -1,7 +1,7 @@
 import { React, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Container, Typography, Box, FormControlLabel, Checkbox, Button, Card, CardContent } from '@mui/material';
-import useFetch from '../useFetch';
+import useFetch from '../App/useFetch';
 import './OrderPizza.css';
 export default function OrderPizza() {
     const location = useLocation();
@@ -32,7 +32,6 @@ export default function OrderPizza() {
                 throw new Error('Failed to submit pizza order data');
             }
             const result = await response.json();
-            console.log('Order saved:', result);
             setOrder(order);
             setFeedbackMessage('Order submitted successfully');
             setSelectedToppings([]);

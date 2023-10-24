@@ -21,6 +21,7 @@ namespace backend.Data
                 new PizzaSize(2, "Medium", 10.00),
                 new PizzaSize(3, "Large", 12.00)
                 );
+                context.SaveChanges();
             }
             if (!context.PizzaToppings.Any())
             {
@@ -32,10 +33,9 @@ namespace backend.Data
                 new PizzaTopping(5, "Chicken", 1.00),
                 new PizzaTopping(6, "Olives", 1.00),
                 new PizzaTopping(7, "Mushrooms", 1.00)
-
                 );
+                context.SaveChanges();
             }
-            context.SaveChanges();
         }
     }
 }

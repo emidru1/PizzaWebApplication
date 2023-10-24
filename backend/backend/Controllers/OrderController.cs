@@ -41,28 +41,6 @@ namespace backend.Controllers
                                   .ThenInclude(ot => ot.PizzaTopping)
                                   .ToListAsync();
         }
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<OrderDTO>> GetOrderByIdAsync(int id)
-        {
-            try
-            {
-                var order = await _dbContext.Orders
-                                            .Include(o => o.Size)
-                                            .Include(o => o.OrderToppings)
-                                            .ThenInclude(ot => ot.PizzaTopping)
-                                            .FirstOrDefaultAsync(o => o.Id == id);
-                if (order == null)
-                {
-                    return NotFound();
-                }
-                var orderDto = _mapper.Map<OrderDTO>(order);
-                return Ok(orderDto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error");
-            }
-        }
 
         [HttpPost("calculateTotal")]
         public async Task<IActionResult> CalculateOrderTotal([FromBody] CreateOrderRequestDTO orderRequest)
@@ -89,13 +67,14 @@ namespace backend.Controllers
                 {
                     total *= 0.9;
                 }
+
                 //Round order total to 2 decimals after comma
                 total = Math.Round(total, 2);
                 return Ok(new { OrderTotal = total });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -125,6 +104,7 @@ namespace backend.Controllers
                 {
                     order.OrderTotal *= 0.9;
                 }
+
                 //Round order total to 2 decimals after comma
                 order.OrderTotal = Math.Round(order.OrderTotal, 2);
 
@@ -144,7 +124,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
     }

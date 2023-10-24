@@ -7,10 +7,12 @@ namespace backend.DTOs.Profiles
         public MappingProfile()
         {
             CreateMap<Order, OrderDTO>()
-                .ForMember(dest => dest.Toppings,
-                           opt => opt.MapFrom(src => src.OrderToppings.Select(ot => ot.PizzaTopping)));
+                    .ForMember(dest => dest.Toppings,
+                        opt => opt.MapFrom(src => src.OrderToppings.Select(ot => ot.PizzaTopping)));
+
             CreateMap<PizzaSize, PizzaSizeDTO>();
             CreateMap<PizzaTopping, PizzaToppingDTO>();
+
         }
     }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import useFetch from '../useFetch';
+import useFetch from '../App/useFetch.js';
 import { Card, CardContent, CardActions, Button, Grid, Typography, Container, Box, CardMedia } from '@mui/material';
 import smallPizzaImg from '../../images/small_pizza.jpg';
 import mediumPizzaImg from '../../images/medium_pizza.jpg';
@@ -30,10 +30,10 @@ export default function Pizzas() {
     return (
     <div>
         <Container disableGutters maxWidth="sm" component="main" className="pizza-header-container">
-            <Typography component="h1" variant="h2" align="center" color="text.primary" className="pizza-header">
+            <Typography component="h1" variant="h2" align="center" className="pizza-header">
                 Pizza List
             </Typography>
-            <Typography variant="h5" align="center" color="text.secondary" component="p" className="pizza-subheader">
+            <Typography variant="h5" align="center" component="p" className="pizza-subheader">
                 Choose your pizza size to proceed with your order
             </Typography>
         </Container>
@@ -42,7 +42,7 @@ export default function Pizzas() {
             <Grid container spacing={10} alignItems="flex-end">
                 {
                     pizzas.map(pizza => (
-                        <Grid item key={pizza.id} xs={12} md={4}>
+                        <Grid item key={pizza.id} xs={12} sm={6} md={4}>
                             <Box className="pizza-card-box">
                                 <Card className="pizza-card">
                                     <CardMedia

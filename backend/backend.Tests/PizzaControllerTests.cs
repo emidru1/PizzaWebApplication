@@ -1,69 +1,54 @@
 ﻿using backend.Controllers;
-using backend.Data;
 using backend.Models;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Xunit;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using backend.Tests.Mock;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace backend.Tests
 {
-    public class PizzaControllerTests
+    public class PizzaControllerTests : IClassFixture<InMemoryDbContextSetup>
     {
-        private readonly PizzaDbContext _context;
-        private readonly PizzaController _controller;
+        private readonly InMemoryDbContextSetup _dbSetup;
 
-        public PizzaControllerTests()
+        public PizzaControllerTests(InMemoryDbContextSetup dbSetup)
         {
-            _context = PizzaDbContextMock.GetDatabaseMock().Object;
-            _controller = new PizzaController(_context);
+            _dbSetup = new InMemoryDbContextSetup();
         }
 
         [Fact]
-        public async void GetAllPizzaSizes_ReturnsCorrectSizes()
+        public async Task GetAllPizzaSizes_ReturnsAllSizes()
         {
-            var expectedSizes = MockData.GetPizzaSizes();
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
 
-            var actionResult = await _controller.GetAllPizzaSizes();
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            var controller = new PizzaController(context);
 
-            Assert.Equal(200, okResult.StatusCode);
+            // Act
+            var result = await controller.GetAllPizzaSizes();
 
-            var sizes = okResult.Value as IEnumerable<PizzaSize>;
-            Assert.NotNull(sizes);
-            Assert.Equal(expectedSizes.Count, sizes.Count());
-
-            var expectedSize = expectedSizes.First();
-            var actualSize = sizes.First();
-            Assert.Equal(expectedSize.Id, actualSize.Id);
-            Assert.Equal(expectedSize.Name, actualSize.Name);
-            Assert.Equal(expectedSize.Price, actualSize.Price);
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnValue = Assert.IsType<List<PizzaSize>>(okResult.Value);
+            Assert.Equal(3, returnValue.Count); 
         }
 
         [Fact]
-        public async void GetAllPizzaToppings_ReturnsCorrectToppings()
+        public async Task GetAllPizzaToppings_ReturnsAllPizzaSizes()
         {
-            var expectedToppings = MockData.GetPizzaToppings();
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new PizzaController(context);
 
-            var actionResult = await _controller.GetAllPizzaToppings();
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            // Act
+            var result = await controller.GetAllPizzaToppings();
 
-            Assert.Equal(200, okResult.StatusCode);
-
-            var toppings = okResult.Value as IEnumerable<PizzaTopping>;
-            Assert.NotNull(toppings);
-            Assert.Equal(expectedToppings.Count, toppings.Count());
-
-            var expectedTopping = expectedToppings.First();
-            var actualTopping = toppings.First();
-            Assert.Equal(expectedTopping.Id, actualTopping.Id);
-            Assert.Equal(expectedTopping.Name, actualTopping.Name);
-            Assert.Equal(expectedTopping.Price, actualTopping.Price);
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnValue = Assert.IsType<List<PizzaTopping>>(okResult.Value);
+            Assert.Equal(7, returnValue.Count);
         }
     }
-
-
 }

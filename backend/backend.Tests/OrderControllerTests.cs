@@ -1,52 +1,184 @@
-﻿using backend.Controllers;
-using backend.Data;
+﻿using AutoMapper;
+using backend.Controllers;
 using backend.DTOs;
 using backend.Models;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Xunit;
-using AutoMapper;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using backend.Tests.Mock;
+using NuGet.Frameworks;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
 
 namespace backend.Tests
 {
-    public class OrderControllerTests
+    public class OrderControllerTests : IClassFixture<InMemoryDbContextSetup>
     {
-        private readonly PizzaDbContext _context;
-        private readonly OrderController _controller;
-        private readonly Mock<IMapper> _mockMapper;
+        private readonly IMapper _mapper;
+        private InMemoryDbContextSetup _dbSetup;
 
         public OrderControllerTests()
         {
-            _context = PizzaDbContextMock.GetDatabaseMock().Object;
-            _mockMapper = new Mock<IMapper>();
-            _controller = new OrderController(_context, _mockMapper.Object);
+            _dbSetup = new InMemoryDbContextSetup();
+            _mapper = CreateTestMapper();
+        }
+
+        private static IMapper CreateTestMapper()
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new DTOs.Profiles.MappingProfile());
+            });
+
+            return config.CreateMapper();
         }
 
         [Fact]
-        public async void GetAllOrdersAsync_ShouldReturnAllOrders()
+        public async Task GetAllOrdersAsync_ReturnsAllOrders()
         {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
 
-            var orders = MockData.GetOrders();
-            Console.WriteLine(orders.Count());
             // Act
-            var result = await _controller.GetAllOrdersAsync();
+            var result = await controller.GetAllOrdersAsync();
 
             // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
-            var actionResult = result.Result as OkObjectResult;
-            Assert.IsType<List<OrderDTO>>(actionResult.Value);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            var returnValue = Assert.IsType<List<OrderDTO>>(okResult.Value);
+            //Since new database context is created, it should return empty order list
+            Assert.Equal(0, returnValue.Count);
+        }
+
+
+        [Fact]
+        public async Task CalculateOrderTotal_WithValidInput_ReturnsCorrectTotal()
+        {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
+            var orderRequest = new CreateOrderRequestDTO
+            {
+                SizeName = "Small",
+                ToppingNames = new List<string> { "Tomato sauce", "Cheese" }
+            };
+
+            // Act
+            var result = await controller.CalculateOrderTotal(orderRequest);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var orderTotalProperty = okResult.Value.GetType().GetProperty("OrderTotal");
+            if (orderTotalProperty != null)
+            {
+                double orderTotal = (double)orderTotalProperty.GetValue(okResult.Value);
+                Assert.Equal(10.00, orderTotal);
+            }
+            else
+            {   
+                //Fail the test on purpose if orderTotalProperty is not found(debugging purposes)
+                Assert.True(false, "OrderTotal property not found");
+            }
+            
+        }
+        [Fact]
+        public async Task CalculateOrderTotal_WithInvalidSizeName_ReturnsBadRequest()
+        {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
+            var orderRequest = new CreateOrderRequestDTO
+            {
+                SizeName = "ExtraLarge", //Does not exist
+                ToppingNames = new List<string> { "Tomato sauce", "Cheese" }
+            };
+
+            // Act
+            var result = await controller.CalculateOrderTotal(orderRequest);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+        [Fact]
+        public async Task CalculateOrderTotal_WithInvalidToppingNames_ReturnsBadRequest()
+        {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
+            var orderRequest = new CreateOrderRequestDTO
+            {
+                SizeName = "Small",
+                ToppingNames = new List<string> { "Tomato sauce", "DoesNotExist" } //One of the toppings does not exist
+            };
+
+            // Act
+            var result = await controller.CalculateOrderTotal(orderRequest);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+        [Fact]
+        public async Task CreateOrderAsync_WithValidInput_CreatesOrderSuccessfully()
+        {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
+            var orderRequest = new CreateOrderRequestDTO
+            {
+                SizeName = "Small",
+                ToppingNames = new List<string> { "Tomato sauce", "Cheese" }
+            };
+
+            // Act
+            var actionResult = await controller.CreateOrderAsync(orderRequest);
+
+            // Assert
+            var okResult = actionResult.Result as OkObjectResult;
+            Assert.NotNull(okResult);
+            var orderDto = okResult.Value as OrderDTO;
+            double expectedTotal = 8.00 + 1.00 + 1.00; // Small size and two toppings
+            Assert.Equal(expectedTotal, orderDto.OrderTotal);
         }
 
         [Fact]
-        public async void GetOrderByIdAsync_ValidId_ShouldReturnOrder()
+        public async Task CreateOrderAsync_WithInvalidSizeName_ReturnsBadRequest()
         {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
+            var orderRequest = new CreateOrderRequestDTO
+            {
+                SizeName = "ExtraLarge", //ExtraLarge does not exist (Sizes: Small, Medium, Large)
+                ToppingNames = new List<string> { "Tomato sauce", "Cheese" }
+            };
 
+            // Act
+            var actionResult = await controller.CreateOrderAsync(orderRequest);
+
+            // Assert
+            var badRequestResult = actionResult.Result as BadRequestObjectResult;
+            Assert.NotNull(badRequestResult);
         }
 
+        [Fact]
+        public async Task CreateOrderAsync_WithMoreThanThreeToppings_AppliesDiscount()
+        {
+            // Arrange
+            var context = _dbSetup.CreateNewContext();
+            var controller = new OrderController(context, _mapper);
+            var orderRequest = new CreateOrderRequestDTO
+            {
+                SizeName = "Small",
+                ToppingNames = new List<string> { "Tomato sauce", "Cheese", "Pepperoni", "Chicken" }
+            };
 
+            // Act
+            var actionResult = await controller.CreateOrderAsync(orderRequest);
 
+            // Assert
+            var okResult = actionResult.Result as OkObjectResult;
+            Assert.NotNull(okResult);
+            var orderDto = okResult.Value as OrderDTO;
+            double expectedTotal = (8.00 + 1.00 + 1.00 + 1.00 + 1.00) * 0.9; // 10% discount
+            Assert.Equal(expectedTotal, orderDto.OrderTotal);
+        }
     }
 }

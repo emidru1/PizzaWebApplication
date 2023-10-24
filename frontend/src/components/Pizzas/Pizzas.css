@@ -7,7 +7,7 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
     margin: 0;
-    font-family: 'Arial', sans-serif; /* Optional: To use a default font for the entire app */
+    font-family: 'Arial', sans-serif;
   }
   .pizza-header-container {
     padding-top: 4rem;
